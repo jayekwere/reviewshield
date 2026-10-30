@@ -11,7 +11,7 @@ export const safePath = z
       !p.startsWith("/") &&
       !p.includes("\\") &&
       !p.split("/").some((s) => s === ".." || s === "." || s === "") &&
-      !/[\u0000-\u001f:?#%]/.test(p),
+      !/[\u0000-\u001f\u007f:?#%]/.test(p),
     "Unsafe repository path",
   );
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -130,6 +130,14 @@ export const requestSchema = z
       .max(5000),
     sarif,
     baseline: z.array(baseline).max(10000).default([]),
+    scan_scope: z
+      .object({
+        name: z.literal("configured-python-rules"),
+        assessed: z.array(safePath).max(500),
+        unassessed: z.array(safePath).max(500),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 export type Request = z.infer<typeof requestSchema>;
@@ -154,6 +162,17 @@ export function review(value: unknown, now = new Date()) {
   const input = requestSchema.parse(value);
   const files = new Map(input.files.map((f) => [f.path, f]));
   if (files.size !== input.files.length) throw new Error("Duplicate file context");
+  if (input.scan_scope) {
+    const assessed = [...input.scan_scope.assessed].sort();
+    const unassessed = input.scan_scope.unassessed;
+    if (
+      JSON.stringify(assessed) !== JSON.stringify([...files.keys()].sort()) ||
+      new Set(assessed).size !== assessed.length ||
+      new Set(unassessed).size !== unassessed.length ||
+      unassessed.some((p) => files.has(p))
+    )
+      throw new Error("Invalid scanner scope evidence");
+  }
   const baselineKeys = new Set<string>();
   for (const b of input.baseline) {
     if (
@@ -250,9 +269,17 @@ export function review(value: unknown, now = new Date()) {
     }));
   const batches = [];
   for (let i = 0; i < annotations.length; i += 50) batches.push(annotations.slice(i, i + 50));
+  const conclusion = fresh.length
+    ? ("failure" as const)
+    : input.scan_scope?.unassessed.length
+      ? ("neutral" as const)
+      : ("success" as const);
+  const scopeSummary = input.scan_scope
+    ? ` Configured Python rules: ${input.scan_scope.assessed.length} assessed files; ${input.scan_scope.unassessed.length} changed files unassessed.`
+    : "";
   return {
     schema_version: "1.0",
-    decision: fresh.length ? "failure" : "success",
+    decision: conclusion,
     head_sha: input.head_sha,
     repository: input.repository,
     tenant: input.tenant,
@@ -260,13 +287,13 @@ export function review(value: unknown, now = new Date()) {
     new_findings: fresh.length,
     unannotated_findings: fresh.filter((f) => !f.on_changed_lines).length,
     check: {
-      name: "ReviewShield",
+      name: input.scan_scope ? "ReviewShield / Python" : "ReviewShield",
       head_sha: input.head_sha,
       status: "completed" as const,
-      conclusion: fresh.length ? ("failure" as const) : ("success" as const),
+      conclusion,
       output: {
         title: `${fresh.length} new findings`,
-        summary: `${findings.length} distinct findings. ${annotations.length} overlap changed lines. Baselines require exact source evidence.`,
+        summary: `${findings.length} distinct findings. ${annotations.length} overlap changed lines. Baselines require exact source evidence.${scopeSummary}`,
       },
     },
     annotation_batches: batches,

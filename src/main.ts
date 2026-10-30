@@ -14,6 +14,7 @@ async function main(): Promise<void> {
   );
   console.log(JSON.stringify(result, null, 2));
   if (command === "check" && result.decision === "failure") process.exitCode = 1;
+  if (command === "check" && result.decision === "neutral") process.exitCode = 2;
 }
 main().catch((error) => {
   console.error(error instanceof Error ? error.message : "Review failed");

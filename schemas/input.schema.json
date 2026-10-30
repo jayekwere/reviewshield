@@ -358,6 +358,39 @@
         ],
         "additionalProperties": false
       }
+    },
+    "scan_scope": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "configured-python-rules"
+        },
+        "assessed": {
+          "maxItems": 500,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "unassessed": {
+          "maxItems": 500,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      },
+      "required": [
+        "name",
+        "assessed",
+        "unassessed"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

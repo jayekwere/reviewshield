@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import tempfile
 import unittest
@@ -8,10 +10,67 @@ from subprocess import CompletedProcess
 from typing import Any
 from unittest.mock import patch
 
-from scanner.worker import scan_checkout
+from scanner.worker import scan_checkout, scan_manifest
 
 
 class WorkerTests(unittest.TestCase):
+    def test_manifest_transfer_keeps_private_source_and_checks_digest(self) -> None:
+        data = b"pass\n"
+        manifest = {
+            "schema_version": "1.0",
+            "files": [
+                {
+                    "path": "nested/file.py",
+                    "content_base64": base64.b64encode(data).decode(),
+                    "sha256": hashlib.sha256(data).hexdigest(),
+                }
+            ],
+        }
+
+        def scan(root: Path, rules: Path) -> dict[str, Any]:
+            source = root / "nested/file.py"
+            self.assertEqual(source.read_bytes(), data)
+            self.assertEqual(source.stat().st_mode & 0o777, 0o600)
+            return {"verified": True}
+
+        with patch("scanner.worker.scan_checkout", side_effect=scan):
+            self.assertEqual(
+                scan_manifest(json.dumps(manifest).encode(), Path("policy/semgrep.yml")),
+                {"verified": True},
+            )
+
+    def test_manifest_rejects_paths_duplicates_substitution_and_invalid_encoding(self) -> None:
+        file = {
+            "path": "file.py",
+            "content_base64": "cGFzcwo=",
+            "sha256": hashlib.sha256(b"pass\n").hexdigest(),
+        }
+        for item in [
+            dict(file, path=p)
+            for p in [
+                "/outside.py",
+                "../outside.py",
+                "a/../outside.py",
+                "a\\file.py",
+                "a//file.py",
+                "a.py%00",
+                "a.ts",
+            ]
+        ] + [dict(file, sha256="0" * 64), dict(file, content_base64="%%%=")]:
+            with self.assertRaises(ValueError):
+                scan_manifest(
+                    json.dumps({"schema_version": "1.0", "files": [item]}).encode(),
+                    Path("policy/semgrep.yml"),
+                )
+        for files in [[], [file, file]]:
+            with self.assertRaises(ValueError):
+                scan_manifest(
+                    json.dumps({"schema_version": "1.0", "files": files}).encode(),
+                    Path("policy/semgrep.yml"),
+                )
+        with self.assertRaises(ValueError):
+            scan_manifest(b" " * 12_000_001, Path("policy/semgrep.yml"))
+
     def test_native_coverage_and_source_digest_are_required(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

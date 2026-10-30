@@ -151,7 +151,12 @@ test("replay and queued receipts survive process restart and bind body hashes", 
     queue.close();
     queue = new Queue(path);
     assert.deepEqual(queue.get(receipt.payload_sha256), receipt);
+    assert.equal(queue.next(), receipt.payload_sha256);
+    assert.deepEqual(queue.claim(receipt.payload_sha256), receipt);
+    assert.throws(() => queue.claim(receipt.payload_sha256));
     queue.complete(receipt.payload_sha256);
+    assert.equal(queue.next(), undefined);
+    assert.throws(() => queue.claim(receipt.payload_sha256));
     assert.throws(() => queue.get("unknown"));
     queue.close();
     const replay = new ReplayStore(join(dir, "replay.db"));

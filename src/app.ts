@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { z } from "zod";
+import { coordinate } from "./coordinator.js";
 import { authorizeEvent, bindingSchema, installationToken, publish } from "./github.js";
 import { load } from "./io.js";
 import { requestSchema } from "./review.js";
@@ -11,12 +12,14 @@ const receiptSchema = z
   .object({
     tenant: z.string(),
     repository: z.string(),
-    head_sha: z.string(),
+    installation_id: z.number().int().positive(),
+    repository_id: z.number().int().positive(),
+    head_sha: z.string().regex(/^[a-f0-9]{40}$/),
     pr: z.number().int().positive(),
-    payload_sha256: z.string(),
+    payload_sha256: z.string().regex(/^[a-f0-9]{64}$/),
   })
   .strict();
-type Receipt = z.infer<typeof receiptSchema>;
+export type Receipt = z.infer<typeof receiptSchema>;
 export class Queue {
   private db: DatabaseSync;
   constructor(path: string) {
@@ -38,6 +41,23 @@ export class Queue {
     if (!row) throw new Error("Unknown job");
     return receiptSchema.parse(JSON.parse(String(row.receipt)));
   }
+  next(): string | undefined {
+    const row = this.db
+      .prepare("SELECT id FROM jobs WHERE status='queued' ORDER BY rowid LIMIT 1")
+      .get();
+    return row ? String(row.id) : undefined;
+  }
+  claim(id: string): Receipt {
+    if (
+      this.db.prepare("UPDATE jobs SET status='processing' WHERE id=? AND status='queued'").run(id)
+        .changes !== 1
+    )
+      throw new Error("Job is not queued");
+    return this.get(id);
+  }
+  fail(id: string): void {
+    this.db.prepare("UPDATE jobs SET status='failed' WHERE id=? AND status='processing'").run(id);
+  }
   complete(id: string): void {
     this.db.prepare("UPDATE jobs SET status='completed' WHERE id=?").run(id);
   }
@@ -53,6 +73,15 @@ export async function runJob(
   token: string,
   request: typeof fetch = fetch,
 ) {
+  receiptSchema.parse(receipt);
+  bindingSchema.parse(binding);
+  if (
+    receipt.tenant !== binding.tenant ||
+    receipt.repository !== binding.repository ||
+    receipt.installation_id !== binding.installation_id ||
+    receipt.repository_id !== binding.repository_id
+  )
+    throw new Error("Queued installation binding changed");
   const artifact = requestSchema.parse(input);
   if (
     artifact.tenant !== receipt.tenant ||
@@ -92,10 +121,70 @@ async function main(): Promise<void> {
   const queuePath = process.env.QUEUE_PATH ?? "artifacts/jobs.db";
   await mkdir(dirname(queuePath), { recursive: true, mode: 0o700 });
   const queue = new Queue(queuePath);
+  if (command === "work" || command === "worker") {
+    let stopping = false;
+    const stop = () => {
+      stopping = true;
+    };
+    process.on("SIGINT", stop);
+    process.on("SIGTERM", stop);
+    try {
+      do {
+        const key = command === "work" ? (process.argv[3] ?? queue.next()) : queue.next();
+        if (!key) {
+          if (command === "work") break;
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+        const job = queue.claim(key);
+        let publicationAttempted = false;
+        try {
+          const binding = bindings.find(
+            (b) =>
+              b.tenant === job.tenant &&
+              b.repository === job.repository &&
+              b.installation_id === job.installation_id &&
+              b.repository_id === job.repository_id,
+          );
+          if (!binding) throw new Error("Job installation binding removed");
+          const token = await installationToken(
+            process.env.APP_ID ?? "",
+            await readFile(process.env.APP_KEY_FILE ?? "", "utf8"),
+            binding.installation_id,
+            binding.repository_id,
+          );
+          const prepared = await coordinate(job, binding, token);
+          publicationAttempted = true;
+          const result = await runJob(prepared.artifact, job, binding, token);
+          queue.complete(key);
+          console.log(JSON.stringify({ job: key, ...result, evidence: prepared.evidence }));
+        } catch {
+          queue.fail(key);
+          console.error(
+            JSON.stringify({
+              job: key,
+              status: "failed",
+              publication_outcome: publicationAttempted ? "uncertain" : "not_attempted",
+            }),
+          );
+          if (command === "work") process.exitCode = 2;
+        }
+      } while (command === "worker" && !stopping);
+    } finally {
+      queue.close();
+      process.off("SIGINT", stop);
+      process.off("SIGTERM", stop);
+    }
+    return;
+  }
   if (command === "publish") {
     const job = queue.get(process.argv[3] ?? "");
     const binding = bindings.find(
-      (b) => b.tenant === job.tenant && b.repository === job.repository,
+      (b) =>
+        b.tenant === job.tenant &&
+        b.repository === job.repository &&
+        b.installation_id === job.installation_id &&
+        b.repository_id === job.repository_id,
     );
     if (!binding) throw new Error("Job installation binding removed");
     const token = await installationToken(
@@ -111,7 +200,9 @@ async function main(): Promise<void> {
     return;
   }
   if (command !== "webhook")
-    throw new Error("Usage: app webhook | publish JOB_SHA256 TRUSTED_ARTIFACT.json");
+    throw new Error(
+      "Usage: app webhook | worker | work [JOB_SHA256] | publish JOB_SHA256 TRUSTED_ARTIFACT.json",
+    );
   const secret = process.env.WEBHOOK_SECRET ?? "";
   if (secret.length < 32) throw new Error("WEBHOOK_SECRET must contain at least 32 characters");
   createServer(async (req, res) => {

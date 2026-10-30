@@ -51,6 +51,8 @@ export function authorizeEvent(
   return {
     tenant: binding.tenant,
     repository: binding.repository,
+    installation_id: binding.installation_id,
+    repository_id: binding.repository_id,
     head_sha: event.pull_request.head.sha,
     pr: event.pull_request.number,
     payload_sha256: digest(raw),
