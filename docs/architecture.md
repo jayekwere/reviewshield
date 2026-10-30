@@ -14,7 +14,8 @@ flowchart LR
 | `src/github.ts:16` | Raw-byte HMAC verification |
 | `src/app.ts:49` | Receipt and current PR revision binding |
 | `src/review.ts:153` | Finding fidelity, source-bound baseline, annotation batches |
-| `scanner/scan.py:9` | Pinned local Semgrep invocation without source execution |
+| `scanner/scan.py:29` | Pinned local Semgrep invocation without source execution |
+| `scanner/scan.py:11` | Checkout-bound canonical scanner paths with outside-file rejection |
 
 ## Effective resources
 
@@ -27,7 +28,7 @@ flowchart LR
 
 ## Trust and decisions
 
-Webhook authentication binds a signed payload to a configured installation and repository. Queue identity hashes the body, not the unsigned delivery header. A separately trusted worker must derive all scan inputs from that queued immutable revision. Its manifest remains an assertion from that trusted worker. runJob then binds the artifact to the receipt and current PR head/base before publish checks numeric repository identity. SARIF messages and PR body text never become code or instructions. Source-bound baselines include severity and cannot be reused after source or location changes.
+Webhook authentication binds a signed payload to a configured installation and repository. Queue identity hashes the body, not the unsigned delivery header. A separately trusted worker must derive all scan inputs from that queued immutable revision. Its manifest remains an assertion from that trusted worker. The scanner adapter resolves reported file locations against the checkout, rejects outside or missing files and remote URLs, and emits repository-relative URIs. runJob then binds the artifact to the receipt and current PR head/base before publish checks numeric repository identity. SARIF messages and PR body text never become code or instructions. Source-bound baselines include severity and cannot be reused after source or location changes.
 
 Core domain decisions are separated from HTTP, CLI and external integration adapters. Runtime models reject unsupported contracts instead of interpreting arbitrary instructions. The UI renders supplied strings with textContent. Container startup uses UID 10001 and loopback publication through Compose. Setup downloads dependencies and optional tools once; core synthetic evaluation does not require a network.
 

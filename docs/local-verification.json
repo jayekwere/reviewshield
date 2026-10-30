@@ -10,6 +10,7 @@
     "read_only": true,
     "capabilities": "dropped"
   },
-  "typescript_coverage_report": "start of coverage report\n\u2139 ---------------------------------------------------------------\n\u2139 file       | line % | branch % | funcs % | uncovered lines\n\u2139 ---------------------------------------------------------------\n\u2139 src        |        |          |         | \n\u2139  app.ts    |  69.48 |    88.89 |   81.82 | 71-115 121-122\n\u2139  github.ts |  93.41 |    80.65 |  100.00 | 24 63 73-76 134-138\n\u2139  io.ts     |  40.48 |   100.00 |   60.00 | 10-15 17-60\n\u2139  review.ts |  99.64 |    92.54 |  100.00 | 125\n\u2139 ---------------------------------------------------------------\n\u2139 all files  |  83.95 |    89.17 |   91.30 | \n\u2139 ---------------------------------------------------------------\n\u2139",
-  "scope_note": "Node source coverage includes imported production files and excludes test files. Browser coverage is separate. Python percentage combines statements and branches."
+  "scope_note": "Node source coverage includes imported production files and excludes test files. Browser coverage is separate. Python percentage combines statements and branches.",
+  "node_imported_source_line_coverage_percent": 83.92,
+  "node_imported_source_branch_coverage_percent": 89.17
 }

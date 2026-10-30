@@ -1,0 +1,128 @@
+{
+  "verified_commit": "a6269560cd8eff3bbaa9b59355fa134b5cca8aea",
+  "run_url": "https://github.com/jayekwere/reviewshield/actions/runs/41094587921",
+  "run_id": 41094587921,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 124196932689,
+      "name": "verify",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python -m pip install --require-hashes -r requirements-dev.lock",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci --ignore-scripts",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run verify",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run mkdir -p artifacts && node dist/src/main.js demo > artifacts/output.json && cmp samples/output.json artifacts/output.json",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python -m ruff check scanner && python -m mypy --strict scanner",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python -m unittest discover -s scanner -p 'test_*.py'",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python -m venv .scanner && .scanner/bin/python -m pip install --require-hashes -r requirements-scanner.lock",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python scanner/scan.py fixtures artifacts/semgrep.sarif --semgrep .scanner/bin/semgrep",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node --import tsx scripts/verify-scan.ts artifacts/semgrep.sarif",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm audit --audit-level=high",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npx playwright install --with-deps chromium",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:browser",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run docker build -t reviewshield:ci .",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node scripts/container-smoke.mjs reviewshield:ci",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 12995866660,
+      "name": "verification-evidence",
+      "digest": "sha256:6a55e5d65896f34145cb4b8a36c90b042b4026e98121cefe9dbf741fbb456103",
+      "size_in_bytes": 141783,
+      "expires_at": "2026-11-13T16:59:30Z"
+    }
+  ],
+  "scope": "Exact verified snapshot. Later main commits have separately observable workflow runs. Cloud account integration limits remain as documented.",
+  "codeql": {
+    "conclusion": "success",
+    "databaseId": 41094587864,
+    "headSha": "a6269560cd8eff3bbaa9b59355fa134b5cca8aea",
+    "status": "completed",
+    "url": "https://github.com/jayekwere/reviewshield/actions/runs/41094587864"
+  },
+  "earlier_failure": {
+    "run_id": 41093941228,
+    "reason": "Absolute Linux Semgrep filename was rejected by strict repository-path validation. Fixed in scanner adapter with checkout-bound normalization and negative tests."
+  }
+}

@@ -12,7 +12,8 @@ Data flow: Signed webhook --> installation binding --> durable body-hash queue -
 | `src/github.ts:16` | Raw-byte HMAC verification |
 | `src/app.ts:49` | Receipt and current PR revision binding |
 | `src/review.ts:153` | Finding fidelity, source-bound baseline, annotation batches |
-| `scanner/scan.py:9` | Pinned local Semgrep invocation without source execution |
+| `scanner/scan.py:29` | Pinned local Semgrep invocation without source execution |
+| `scanner/scan.py:11` | Checkout-bound canonical scanner paths with outside-file rejection |
 
 | Deployment or workflow | Resource/configuration and effective location | Readers, writers or recipients | Enforcing control or unknown |
 | --- | --- | --- | --- |
@@ -25,7 +26,7 @@ Data flow: Signed webhook --> installation binding --> durable body-hash queue -
 
 Protected assets: Webhook secret, App private key, short-lived installation token, repository/tenant binding, immutable source revision, source hashes, baseline decisions and check conclusions.
 
-Webhook authentication binds a signed payload to a configured installation and repository. Queue identity hashes the body, not the unsigned delivery header. A separately trusted worker must derive all scan inputs from that queued immutable revision. Its manifest remains an assertion from that trusted worker. runJob then binds the artifact to the receipt and current PR head/base before publish checks numeric repository identity. SARIF messages and PR body text never become code or instructions. Source-bound baselines include severity and cannot be reused after source or location changes.
+Webhook authentication binds a signed payload to a configured installation and repository. Queue identity hashes the body, not the unsigned delivery header. A separately trusted worker must derive all scan inputs from that queued immutable revision. Its manifest remains an assertion from that trusted worker. The scanner adapter resolves reported file locations against the checkout, rejects outside or missing files and remote URLs, and emits repository-relative URIs. runJob then binds the artifact to the receipt and current PR head/base before publish checks numeric repository identity. SARIF messages and PR body text never become code or instructions. Source-bound baselines include severity and cannot be reused after source or location changes.
 
 Host administrators, private configuration owners and trusted repository maintainers can alter code, files and private state. They are trusted. An ordinary input author does not gain those capabilities by supplying JSON. Public demo credentials represent synthetic roles in one trusted local demonstration. The local stateless TypeScript evaluators do not establish authenticated service tenancy; the Python services derive tenancy from trusted identities. External assertions retain their stated trust prerequisites.
 
@@ -55,4 +56,4 @@ Low includes limited presentation/integrity confusion without a new privileged o
 One fresh-context independent read-only architecture review informed this model. Source changed during construction; the parent rechecked the controls and source anchors after the reported discrepancies were fixed. Verified negatives are recorded in tests and verification artifacts. External account behavior remains unverified wherever stated.
 
 Repository: https://github.com/jayekwere/reviewshield
-Version: 45e97b22c54c76fccdb20a3703c782460f8d843e
+Version: a6269560cd8eff3bbaa9b59355fa134b5cca8aea
