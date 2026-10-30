@@ -64,6 +64,7 @@ export async function runJob(
     `https://api.github.com/repos/${binding.repository}/pulls/${receipt.pr}`,
     {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+      redirect: "error",
       signal: AbortSignal.timeout(10000),
     },
   );

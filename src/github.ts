@@ -113,6 +113,7 @@ export async function installationToken(
         repository_ids: [repositoryId],
         permissions: { checks: "write", contents: "read", pull_requests: "read" },
       }),
+      redirect: "error",
       signal: AbortSignal.timeout(10000),
     },
   );
@@ -151,6 +152,7 @@ export async function publish(
       ...report.check,
       output: { ...report.check.output, annotations: first ?? [] },
     }),
+    redirect: "error",
     signal: AbortSignal.timeout(10000),
   });
   const check = z.object({ id: z.number().int().positive() }).parse(await responseJSON(response));
@@ -160,6 +162,7 @@ export async function publish(
         method: "PATCH",
         headers,
         body: JSON.stringify({ output: { ...report.check.output, annotations } }),
+        redirect: "error",
         signal: AbortSignal.timeout(10000),
       }),
     );

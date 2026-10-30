@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHmac, generateKeyPairSync, verify } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
+import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -232,4 +233,38 @@ test("contradictory duplicate severities merge to the strongest level", async ()
   ];
   assert.equal(review(s).decision, "failure");
   assert.equal(review(s).findings[0]!.level, "error");
+});
+
+test("privileged token issuance refuses native HTTP redirects before forwarding authorization", async () => {
+  let forwarded = 0;
+  const server = createServer((req, res) => {
+    if (req.url === "/mint") {
+      res.writeHead(302, { Location: "/unexpected-recipient" });
+      res.end();
+    } else {
+      forwarded++;
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ token: "unexpected" }));
+    }
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+    await assert.rejects(() =>
+      installationToken(
+        "1",
+        privateKey.export({ type: "pkcs8", format: "pem" }).toString(),
+        2,
+        3,
+        (_url, init) => fetch(`http://127.0.0.1:${address.port}/mint`, init),
+      ),
+    );
+    assert.equal(forwarded, 0);
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
 });
