@@ -1,11 +1,11 @@
 {
-  "verified_commit": "a6269560cd8eff3bbaa9b59355fa134b5cca8aea",
-  "run_url": "https://github.com/jayekwere/reviewshield/actions/runs/41094587921",
-  "run_id": 41094587921,
+  "verified_commit": "3966df0cc0a12153041152470a4988aec5d877a1",
+  "run_url": "https://github.com/jayekwere/reviewshield/actions/runs/41095406272",
+  "run_id": 41095406272,
   "conclusion": "success",
   "jobs": [
     {
-      "id": 124196932689,
+      "id": 124199739154,
       "name": "verify",
       "conclusion": "success",
       "steps": [
@@ -106,20 +106,20 @@
   ],
   "artifacts": [
     {
-      "id": 12995866660,
+      "id": 12996221668,
       "name": "verification-evidence",
-      "digest": "sha256:6a55e5d65896f34145cb4b8a36c90b042b4026e98121cefe9dbf741fbb456103",
+      "digest": "sha256:9037d532eb0b359610ed810f0e94e321b0ca305ff242a993a930689a426f65e3",
       "size_in_bytes": 141783,
-      "expires_at": "2026-11-13T16:59:30Z"
+      "expires_at": "2026-11-13T17:04:33Z"
     }
   ],
-  "scope": "Exact verified snapshot. Later main commits have separately observable workflow runs. Cloud account integration limits remain as documented.",
+  "scope": "Exact verified commit. A later documentation-only record commit can have a separate green run. Cloud account integration limits remain as documented.",
   "codeql": {
     "conclusion": "success",
-    "databaseId": 41094587864,
-    "headSha": "a6269560cd8eff3bbaa9b59355fa134b5cca8aea",
+    "databaseId": 41095406277,
+    "headSha": "3966df0cc0a12153041152470a4988aec5d877a1",
     "status": "completed",
-    "url": "https://github.com/jayekwere/reviewshield/actions/runs/41094587864"
+    "url": "https://github.com/jayekwere/reviewshield/actions/runs/41095406277"
   },
   "earlier_failure": {
     "run_id": 41093941228,
