@@ -7,3 +7,15 @@ artifacts
 .env
 __pycache__
 .terraform
+
+.private
+
+private-evidence
+
+*.snapshot.json
+
+*.pem
+
+*.key
+
+.env.*

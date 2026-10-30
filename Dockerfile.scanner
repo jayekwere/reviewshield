@@ -1,0 +1,10 @@
+FROM python:3.14.6-slim-bookworm@sha256:4c92ffcde4dd6f1ff72a24518f49fd4990b27134987dfa31a733badde66df9f8
+WORKDIR /opt/reviewshield
+COPY requirements-scanner.lock ./
+RUN python -m pip install --no-cache-dir --require-hashes -r requirements-scanner.lock && groupadd -g 10001 scanner && useradd -u 10001 -g scanner scanner
+COPY scanner/ scanner/
+COPY policy/ policy/
+ENV PYTHONPATH=/opt/reviewshield PYTHONDONTWRITEBYTECODE=1 HOME=/tmp SEMGREP_SEND_METRICS=off
+USER 10001:10001
+ENTRYPOINT ["python", "-P", "-m", "scanner.worker"]
+CMD ["/input"]

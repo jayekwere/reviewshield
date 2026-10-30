@@ -72,3 +72,7 @@ Publication may leave a partial check or duplicate check after an ambiguous netw
  
 
 See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md). MIT covers this repository's original code; dependencies retain their respective licenses.
+
+## Credential-free scan worker
+
+A separate [static scan worker](docs/scan-worker.md) now runs real Semgrep with native file-coverage checks in a restricted container. It rejects PR-controlled ignores, symlinks, parser errors and skipped Python files. App credentials remain in the separate publisher. The worker has a declared Python rule scope; checkout coordination and a persistent production App deployment remain operator responsibilities.

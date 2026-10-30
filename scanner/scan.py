@@ -1,4 +1,5 @@
 """Run a local, pinned rule pack without executing target source."""
+
 import argparse
 import hashlib
 import json
@@ -15,7 +16,12 @@ def normalize_locations(report: dict[str, Any], root: Path) -> None:
             for location in result.get("locations", []):
                 artifact = location["physicalLocation"]["artifactLocation"]
                 uri = urlsplit(artifact["uri"])
-                if uri.scheme not in {"", "file"} or uri.netloc not in {"", "localhost"} or uri.query or uri.fragment:
+                if (
+                    uri.scheme not in {"", "file"}
+                    or uri.netloc not in {"", "localhost"}
+                    or uri.query
+                    or uri.fragment
+                ):
                     raise ValueError("Scanner location must identify a checkout file")
                 path = Path(unquote(uri.path, errors="strict"))
                 resolved = (path if path.is_absolute() else root / path).resolve()
@@ -27,7 +33,18 @@ def normalize_locations(report: dict[str, Any], root: Path) -> None:
 
 
 def scan(target: Path, rules: Path, output: Path, semgrep: str = "semgrep") -> None:
-    command = [semgrep, "scan", "--config", str(rules.resolve()), "--sarif", "--metrics=off", "--disable-version-check", "--strict", "--no-git-ignore", str(target.resolve())]
+    command = [
+        semgrep,
+        "scan",
+        "--config",
+        str(rules.resolve()),
+        "--sarif",
+        "--metrics=off",
+        "--disable-version-check",
+        "--strict",
+        "--no-git-ignore",
+        str(target.resolve()),
+    ]
     result = subprocess.run(command, capture_output=True, text=True, timeout=120, check=False)
     if result.returncode != 0:
         raise RuntimeError(f"Scanner failed: exit {result.returncode}")
@@ -38,7 +55,15 @@ def scan(target: Path, rules: Path, output: Path, semgrep: str = "semgrep") -> N
             run["invocations"] = [{"executionSuccessful": True}]
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({"scanner": "Semgrep", "report_sha256": hashlib.sha256(output.read_bytes()).hexdigest(), "exit": result.returncode}))
+    print(
+        json.dumps(
+            {
+                "scanner": "Semgrep",
+                "report_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+                "exit": result.returncode,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
