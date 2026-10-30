@@ -1,6 +1,6 @@
 # Isolated static scan worker
 
-The default web image is an offline SARIF evaluator. `Dockerfile.scanner` is a separate credential-free Semgrep worker. It scans Python files with the repository's trusted local rule pack and never executes target source. It makes no claim to assess other languages or every vulnerability class. CodeQL remains a separate SARIF producer.
+The default web image is an offline SARIF evaluator. `Dockerfile.scanner` is a separate credential-free Semgrep worker. It scans Python files with the repository's trusted local rule pack and never executes target source. The bundled rule detects direct `eval(input(...))` syntax; it does not follow indirect parameter flows. It makes no claim to assess other languages or every vulnerability class. CodeQL remains a separate SARIF producer.
 
 ```sh
 mkdir -p artifacts

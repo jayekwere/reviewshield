@@ -31,7 +31,8 @@ jobs:
       - run: npm run verify
       - run: mkdir -p artifacts && node dist/src/main.js demo > artifacts/output.json && cmp samples/output.json artifacts/output.json
       - run: python -m ruff check scanner && python -m mypy --strict scanner
-      - run: python -m unittest discover -s scanner -p 'test_*.py'
+      - run: python -m coverage run --branch --source=scanner --omit='scanner/test_*.py' -m unittest discover -s scanner -p 'test_*.py'
+      - run: python -m coverage report --fail-under=80 && python -m coverage xml -o coverage.xml
       - run: python -m venv .scanner && .scanner/bin/python -m pip install --require-hashes -r requirements-scanner.lock
       - run: python scanner/scan.py fixtures artifacts/semgrep.sarif --semgrep .scanner/bin/semgrep
       - run: node --import tsx scripts/verify-scan.ts artifacts/semgrep.sarif

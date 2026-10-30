@@ -141,7 +141,9 @@ export async function publish(
   const actual = z
     .object({ id: z.number().int(), full_name: z.string() })
     .parse(
-      await responseJSON(await request(base, { headers, signal: AbortSignal.timeout(10000) })),
+      await responseJSON(
+        await request(base, { headers, redirect: "error", signal: AbortSignal.timeout(10000) }),
+      ),
     );
   if (actual.id !== binding.repository_id || actual.full_name !== binding.repository)
     throw new Error("Repository identity mismatch");

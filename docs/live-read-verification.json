@@ -1,0 +1,103 @@
+{
+  "scope": "Actual native GitHub PR/file/blob reads and isolated Semgrep only. Synthetic local receipts, existing GitHub CLI session for reads, no App signed delivery or check writes.",
+  "unsafe": {
+    "observed_at": "2026-10-30T18:58:12.562Z",
+    "source_commit": "f3690d0f21fe78da3a07381c7f9ced516435dfbb",
+    "pr": "https://github.com/jayekwere/reviewshield/pull/2",
+    "head_sha": "d9c1fb9d42a5048eb86eff1f21d338497702db5f",
+    "base_sha": "f3690d0f21fe78da3a07381c7f9ced516435dfbb",
+    "authentication": "existing-gh-session-for-native-reads-only",
+    "webhook_receipt": "synthetic-local-receipt",
+    "github_app_signed_delivery": "not_exercised",
+    "github_app_check_publication": "not_exercised",
+    "scanner": "actual-network-disabled-Docker-Semgrep",
+    "reads": [
+      {
+        "path": "/repos/jayekwere/reviewshield/pulls/2",
+        "status": 200
+      },
+      {
+        "path": "/repos/jayekwere/reviewshield/pulls/2/files",
+        "status": 200
+      },
+      {
+        "path": "/repos/jayekwere/reviewshield/git/blobs/7c7e556a1568de4e7e3da2b72620feb9a58766b2",
+        "status": 200
+      }
+    ],
+    "evidence": {
+      "pr": 2,
+      "head_sha": "d9c1fb9d42a5048eb86eff1f21d338497702db5f",
+      "base_sha": "f3690d0f21fe78da3a07381c7f9ced516435dfbb",
+      "git_blob_verification": "sha1-and-byte-count",
+      "worker_report_sha256": "558bb08d6111172f1242fadbbdf0c59e778798266ed8ab0df3414fe06f62ad3d",
+      "assessed": [
+        "integration-fixtures/native-review-probe.py"
+      ],
+      "unassessed": []
+    },
+    "decision": "failure",
+    "findings": [
+      {
+        "tool": "Semgrep OSS",
+        "rule": "opt.reviewshield.policy.untrusted-eval",
+        "path": "integration-fixtures/native-review-probe.py",
+        "start_line": 2,
+        "end_line": 2,
+        "level": "error",
+        "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+        "fingerprint": "d6ebc371249eb6e71214870514a2dc15318ea56485cf8b18d91a464f8e0c27e2",
+        "source_sha256": "4b7d76dc38d31bd5705f78ac163be20a16cab8cf44cdc3cb533f0de7b181ac76",
+        "occurrences": 1,
+        "baseline": false,
+        "on_changed_lines": true
+      }
+    ]
+  },
+  "safe": {
+    "stale_head_rejected_before_scan": true,
+    "observed_at": "2026-10-30T18:58:59.569Z",
+    "source_commit": "f3690d0f21fe78da3a07381c7f9ced516435dfbb",
+    "pr": "https://github.com/jayekwere/reviewshield/pull/2",
+    "head_sha": "34ec1f3ded744e925944add3eef6a044c4737919",
+    "base_sha": "f3690d0f21fe78da3a07381c7f9ced516435dfbb",
+    "authentication": "existing-gh-session-for-native-reads-only",
+    "webhook_receipt": "synthetic-local-receipt",
+    "github_app_signed_delivery": "not_exercised",
+    "github_app_check_publication": "not_exercised",
+    "scanner": "actual-network-disabled-Docker-Semgrep",
+    "reads": [
+      {
+        "path": "/repos/jayekwere/reviewshield/pulls/2",
+        "status": 200
+      },
+      {
+        "path": "/repos/jayekwere/reviewshield/pulls/2/files",
+        "status": 200
+      },
+      {
+        "path": "/repos/jayekwere/reviewshield/git/blobs/9c976ba36511ac8e89b067db8e44ded792cc2513",
+        "status": 200
+      },
+      {
+        "path": "/repos/jayekwere/reviewshield/pulls/2",
+        "status": 200
+      }
+    ],
+    "evidence": {
+      "pr": 2,
+      "head_sha": "34ec1f3ded744e925944add3eef6a044c4737919",
+      "base_sha": "f3690d0f21fe78da3a07381c7f9ced516435dfbb",
+      "git_blob_verification": "sha1-and-byte-count",
+      "worker_report_sha256": "850e4d4ff411def32c830a840227512bb50d71091e77926fe0898a81e3ea295d",
+      "assessed": [
+        "integration-fixtures/native-review-probe.py"
+      ],
+      "unassessed": []
+    },
+    "decision": "success",
+    "findings": []
+  },
+  "fixture_rule_scope": "Bundled rule matches direct eval(input(...)) only. This is not general taint analysis.",
+  "github_app_acceptance": "Unverified pending App registration, private key and repository installation."
+}

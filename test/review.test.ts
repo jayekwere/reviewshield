@@ -240,7 +240,7 @@ test("contradictory duplicate severities merge to the strongest level", async ()
   assert.equal(review(s).findings[0]!.level, "error");
 });
 
-test("privileged token issuance refuses native HTTP redirects before forwarding authorization", async () => {
+test("privileged token issuance and repository reads refuse native HTTP redirects", async () => {
   let forwarded = 0;
   const server = createServer((req, res) => {
     if (req.url === "/mint") {
@@ -264,6 +264,11 @@ test("privileged token issuance refuses native HTTP redirects before forwarding 
         2,
         3,
         (_url, init) => fetch(`http://127.0.0.1:${address.port}/mint`, init),
+      ),
+    );
+    await assert.rejects(
+      publish(await sample(), binding, "synthetic-token", (_url, init) =>
+        fetch(`http://127.0.0.1:${address.port}/mint`, init),
       ),
     );
     assert.equal(forwarded, 0);
