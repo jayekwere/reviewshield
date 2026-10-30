@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "tenant": "alder",
+  "repository": "synthetic/service",
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "base_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "scanner_exit": 0,
+  "files": [
+    {
+      "path": "fixtures/safe.py",
+      "source_sha256": "fa3bfb7ab3595a5fa8a00f0c694b02708b415bf3dabc5be27eaaa404a24e8ac4",
+      "changed_lines": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "path": "fixtures/unsafe.py",
+      "source_sha256": "c52f431dd282b3d7a24a188ed4837f62d8d0bb30854428c9f6c90c5010862160",
+      "changed_lines": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    }
+  ],
+  "sarif": {
+    "version": "2.1.0",
+    "runs": [
+      {
+        "invocations": [
+          {
+            "executionSuccessful": true,
+            "toolExecutionNotifications": []
+          }
+        ],
+        "results": [
+          {
+            "fingerprints": {
+              "matchBasedId/v1": "requires login"
+            },
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "fixtures/unsafe.py",
+                    "uriBaseId": "%SRCROOT%"
+                  },
+                  "region": {
+                    "endColumn": 38,
+                    "endLine": 2,
+                    "snippet": {
+                      "text": "eval(input(\"synthetic expression: \"))"
+                    },
+                    "startColumn": 1,
+                    "startLine": 2
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser."
+            },
+            "properties": {},
+            "ruleId": "policy.untrusted-eval"
+          }
+        ],
+        "tool": {
+          "driver": {
+            "name": "Semgrep OSS",
+            "rules": [
+              {
+                "defaultConfiguration": {
+                  "level": "error"
+                },
+                "fullDescription": {
+                  "text": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser."
+                },
+                "help": {
+                  "markdown": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+                  "text": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser."
+                },
+                "id": "policy.untrusted-eval",
+                "name": "policy.untrusted-eval",
+                "properties": {
+                  "precision": "very-high",
+                  "tags": []
+                },
+                "shortDescription": {
+                  "text": "Semgrep Finding: policy.untrusted-eval"
+                }
+              }
+            ],
+            "semanticVersion": "1.166.0"
+          }
+        }
+      }
+    ],
+    "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json"
+  },
+  "baseline": []
+}

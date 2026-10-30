@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "decision": "failure",
+  "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "repository": "synthetic/service",
+  "tenant": "alder",
+  "findings": [
+    {
+      "tool": "Semgrep OSS",
+      "rule": "policy.untrusted-eval",
+      "path": "fixtures/unsafe.py",
+      "start_line": 2,
+      "end_line": 2,
+      "level": "error",
+      "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+      "fingerprint": "e9186ca8b907df815963e034e296b1b8f48341a038fb3c1a6ba7712667094966",
+      "source_sha256": "c52f431dd282b3d7a24a188ed4837f62d8d0bb30854428c9f6c90c5010862160",
+      "occurrences": 1,
+      "baseline": false,
+      "on_changed_lines": true
+    }
+  ],
+  "new_findings": 1,
+  "unannotated_findings": 0,
+  "check": {
+    "name": "ReviewShield",
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "status": "completed",
+    "conclusion": "failure",
+    "output": {
+      "title": "1 new findings",
+      "summary": "1 distinct findings. 1 overlap changed lines. Baselines require exact source evidence."
+    }
+  },
+  "annotation_batches": [
+    [
+      {
+        "path": "fixtures/unsafe.py",
+        "start_line": 2,
+        "end_line": 2,
+        "annotation_level": "failure",
+        "title": "Semgrep OSS: policy.untrusted-eval",
+        "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser."
+      }
+    ]
+  ]
+}

@@ -1,0 +1,7 @@
+rules:
+  - id: untrusted-eval
+    languages: [python]
+    severity: ERROR
+    message: User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.
+    patterns:
+      - pattern: eval(input(...))
