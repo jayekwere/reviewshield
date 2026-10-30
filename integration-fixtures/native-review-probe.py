@@ -1,2 +1,5 @@
 # Analysis-only synthetic fixture. Never imported or executed.
-eval(input("synthetic expression: "))
+import json
+
+def parse_document(text: str) -> object:
+    return json.loads(text)
