@@ -1,7 +1,7 @@
 {
   "date": "2026-10-30",
   "typescript_tests": 12,
-  "python_tests": 2,
+  "python_tests": 3,
   "browser_tests": 1,
   "local_browser": "passed",
   "container_smoke": {

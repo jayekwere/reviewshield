@@ -43,7 +43,7 @@ python3 scanner/scan.py fixtures artifacts/semgrep.sarif --semgrep .scanner/bin/
 node --import tsx scripts/verify-scan.ts artifacts/semgrep.sarif
 ```
 
-The separate CodeQL workflow runs real hosted analysis and retains SARIF artifacts. This analysis is report-only for this repository. A CodeQL producer must supply successful invocation evidence and a complete source manifest before its SARIF is eligible for the review gate. No scanner is run with App credentials.
+The separate CodeQL workflow runs real hosted analysis and retains SARIF artifacts. The recorded JavaScript/TypeScript and Python runs each reported zero findings; both actual artifacts were imported successfully by the review engine. See [the import evidence](docs/codeql-import-verification.json). This analysis is report-only for this repository. A CodeQL producer must supply successful invocation evidence and a complete source manifest before its SARIF is eligible for the review gate. No scanner is run with App credentials.
 
 For a real App, create a trusted `BINDINGS_FILE` JSON array with `tenant`, `installation_id`, `repository_id` and `repository`; set a private `QUEUE_PATH`, a 32-character-or-longer `WEBHOOK_SECRET`, `APP_ID` and `APP_KEY_FILE`. Run `node dist/src/app.js webhook`. A trusted isolated worker scans the queued revision and constructs the request contract; publish it with `node dist/src/app.js publish JOB_SHA256 TRUSTED_ARTIFACT.json`. The App asks for checks write, contents read and pull requests read on one repository. It does not request contents write or execute PR source. See [GitHub webhook validation](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries) and [check API documentation](https://docs.github.com/en/rest/checks/runs).
 

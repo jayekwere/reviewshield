@@ -1,0 +1,22 @@
+[
+  {
+    "language": "javascript-typescript",
+    "source_run": "https://github.com/jayekwere/reviewshield/actions/runs/41093941217",
+    "source_commit": "3ae93035903b66b1399eb6d40f6f5542a86a4724",
+    "sarif_sha256": "da1885cc48d44ce915217290aaff80bbadab2b7152d1781724dcb1b7c92dafd6",
+    "reported_findings": 0,
+    "parsed_decision": "success",
+    "parsed_findings": 0,
+    "scope": "Real hosted CodeQL artifact import smoke. Zero findings means the supplied scan reported none; this does not prove vulnerability absence."
+  },
+  {
+    "language": "python",
+    "source_run": "https://github.com/jayekwere/reviewshield/actions/runs/41093941217",
+    "source_commit": "3ae93035903b66b1399eb6d40f6f5542a86a4724",
+    "sarif_sha256": "d337848b78a463355011c67a0a752f654b7a84a9d5cab239f92294a29dbd76f9",
+    "reported_findings": 0,
+    "parsed_decision": "success",
+    "parsed_findings": 0,
+    "scope": "Real hosted CodeQL artifact import smoke. Zero findings means the supplied scan reported none; this does not prove vulnerability absence."
+  }
+]

@@ -5,10 +5,24 @@ from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import patch
 
-from scan import scan
+from scan import normalize_locations, scan
 
 
 class ScannerTests(unittest.TestCase):
+    def test_absolute_paths_must_resolve_inside_the_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "file.py"
+            source.write_text("pass\n")
+            artifact = {"uri": str(source)}
+            report = {"runs": [{"results": [{"locations": [{"physicalLocation": {"artifactLocation": artifact}}]}]}]}
+            normalize_locations(report, root)
+            self.assertEqual(artifact["uri"], "file.py")
+            for unsafe in [str(root.parent / "outside.py"), "https://example.invalid/file.py", "../outside.py"]:
+                artifact["uri"] = unsafe
+                with self.assertRaises(ValueError):
+                    normalize_locations(report, root)
+
     def test_success_provenance_and_no_shell(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "report.json"
