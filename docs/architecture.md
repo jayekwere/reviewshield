@@ -35,4 +35,6 @@ The coordinator reads fixed official GitHub APIs, verifies each native Git blob 
 
 The configured Python rule scope is explicit. Off-diff findings still block; annotations target changed lines. Exact-source, severity and expiry requirements prevent a baseline from silently suppressing a changed finding. SARIF suppression flags do not become reviewed exceptions. CodeQL remains a separate CI SARIF producer.
 
-Real App registration, installation, signed event delivery and installation-token check publication remain unverified until exercised. The restricted Semgrep worker and hosted CI are separately verified on synthetic inputs. See [scan worker setup](scan-worker.md) and the [source-backed threat model](threatmodel.md) for exact resources, assumptions and limits.
+Real App registration, repository-only installation, signed event delivery and installation-token check publication are verified in [native acceptance evidence](github-app-verification.json), including independent check/annotation readback, replay rejection and stale-head rejection. The restricted Semgrep worker and hosted CI are separately verified on synthetic inputs. See [scan worker setup](scan-worker.md) and the [source-backed threat model](threatmodel.md) for exact resources, assumptions and limits.
+
+Native acceptance used the single-job work command on genuinely signed queued events. It does not establish persistent worker uptime or production hosting. The temporary receiver webhook was disabled after testing; the App registration and local private credentials were retained.

@@ -99,5 +99,6 @@
     "findings": []
   },
   "fixture_rule_scope": "Bundled rule matches direct eval(input(...)) only. This is not general taint analysis.",
-  "github_app_acceptance": "Unverified pending App registration, private key and repository installation."
+  "github_app_acceptance_during_this_read_test": "Unverified pending App registration, private key and repository installation.",
+  "later_native_app_acceptance_record": "github-app-verification.json"
 }

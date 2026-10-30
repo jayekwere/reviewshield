@@ -1,0 +1,242 @@
+{
+  "schema_version": "1.0",
+  "verified_date": "2026-10-30",
+  "source_commit": "37d3d5b3d401a7f7985be86df6c9d24a794d2545",
+  "scope": "Actual GitHub App signed PR synchronization events, durable receipts, isolated native Semgrep and App-token check publication. Jobs were invoked with the single-job work command. This is local acceptance on synthetic analysis-only source, not a persistent production deployment.",
+  "app": {
+    "id": 5547582,
+    "slug": "reviewshield-jay-ekwere",
+    "installation_id": 177030350,
+    "repository": "jayekwere/reviewshield",
+    "repository_selection": "selected",
+    "repository_count": 1,
+    "permissions": {
+      "checks": "write",
+      "contents": "read",
+      "pull_requests": "read",
+      "metadata": "read"
+    },
+    "organization_or_account_permissions": [],
+    "native_installation_token": "verified"
+  },
+  "pr": "https://github.com/jayekwere/reviewshield/pull/3",
+  "deliveries": [
+    {
+      "id": "3851289925722832896",
+      "guid": "fa0b4f10-d4aa-11f1-9354-3b8090eb6c3e",
+      "redelivery": false,
+      "event": "pull_request",
+      "action": "synchronize",
+      "status_code": 202,
+      "pr": 3,
+      "head_sha": "d913a8bdd233a93ca74c536daa29c3482acb0fb0",
+      "signature_present": true,
+      "response": {
+        "job": "9ef338663f524fbc4f2e02c92fc463494b4d3f1d8243434db4f1e8e6a45c6b22",
+        "queued": true
+      }
+    },
+    {
+      "id": "3851289921811652608",
+      "guid": "f90af610-d4aa-11f1-8bd1-99df37e6b3cd",
+      "redelivery": false,
+      "event": "pull_request",
+      "action": "synchronize",
+      "status_code": 202,
+      "pr": 3,
+      "head_sha": "1646e1731ac33e534ceceab3ee520583e947a171",
+      "signature_present": true,
+      "response": {
+        "job": "dc6014b876c31abfd7c36ada3f3d63a07ff8e44cdaebc5c8046a4baa3e7da75f",
+        "queued": true
+      }
+    },
+    {
+      "id": "3851289856151928832",
+      "guid": "a13e2790-d4aa-11f1-8442-c9328fab051a",
+      "redelivery": true,
+      "event": "pull_request",
+      "action": "synchronize",
+      "status_code": 202,
+      "pr": 3,
+      "head_sha": "82be339f03943eb9106f86b881c4126cef812eb6",
+      "signature_present": true,
+      "response": {
+        "job": "cafc49b58c67d63116f5bb1e7a98dd68a8bddb00b36fa90ceb272c9f14fcb0ea",
+        "queued": false
+      }
+    },
+    {
+      "id": "3851289606416777216",
+      "guid": "a13e2790-d4aa-11f1-8442-c9328fab051a",
+      "redelivery": false,
+      "event": "pull_request",
+      "action": "synchronize",
+      "status_code": 202,
+      "pr": 3,
+      "head_sha": "82be339f03943eb9106f86b881c4126cef812eb6",
+      "signature_present": true,
+      "response": {
+        "job": "cafc49b58c67d63116f5bb1e7a98dd68a8bddb00b36fa90ceb272c9f14fcb0ea",
+        "queued": true
+      }
+    }
+  ],
+  "queue": [
+    {
+      "id": "cafc49b58c67d63116f5bb1e7a98dd68a8bddb00b36fa90ceb272c9f14fcb0ea",
+      "status": "completed",
+      "tenant": "alder",
+      "repository": "jayekwere/reviewshield",
+      "installation_id": 177030350,
+      "repository_id": 1439998086,
+      "head_sha": "82be339f03943eb9106f86b881c4126cef812eb6",
+      "pr": 3,
+      "payload_sha256": "cafc49b58c67d63116f5bb1e7a98dd68a8bddb00b36fa90ceb272c9f14fcb0ea"
+    },
+    {
+      "id": "dc6014b876c31abfd7c36ada3f3d63a07ff8e44cdaebc5c8046a4baa3e7da75f",
+      "status": "failed",
+      "tenant": "alder",
+      "repository": "jayekwere/reviewshield",
+      "installation_id": 177030350,
+      "repository_id": 1439998086,
+      "head_sha": "1646e1731ac33e534ceceab3ee520583e947a171",
+      "pr": 3,
+      "payload_sha256": "dc6014b876c31abfd7c36ada3f3d63a07ff8e44cdaebc5c8046a4baa3e7da75f"
+    },
+    {
+      "id": "9ef338663f524fbc4f2e02c92fc463494b4d3f1d8243434db4f1e8e6a45c6b22",
+      "status": "completed",
+      "tenant": "alder",
+      "repository": "jayekwere/reviewshield",
+      "installation_id": 177030350,
+      "repository_id": 1439998086,
+      "head_sha": "d913a8bdd233a93ca74c536daa29c3482acb0fb0",
+      "pr": 3,
+      "payload_sha256": "9ef338663f524fbc4f2e02c92fc463494b4d3f1d8243434db4f1e8e6a45c6b22"
+    }
+  ],
+  "unsafe": {
+    "worker": {
+      "job": "cafc49b58c67d63116f5bb1e7a98dd68a8bddb00b36fa90ceb272c9f14fcb0ea",
+      "check_id": 124328677931,
+      "head_sha": "82be339f03943eb9106f86b881c4126cef812eb6",
+      "evidence": {
+        "pr": 3,
+        "head_sha": "82be339f03943eb9106f86b881c4126cef812eb6",
+        "base_sha": "37d3d5b3d401a7f7985be86df6c9d24a794d2545",
+        "git_blob_verification": "sha1-and-byte-count",
+        "worker_report_sha256": "b4c7720ba2b8943c94964f81db01ba654b6acda6606dcac906614c04cf0e0929",
+        "assessed": [
+          "integration-fixtures/live-app-probe.py"
+        ],
+        "unassessed": []
+      }
+    },
+    "native_check": {
+      "observed_at": "2026-10-30T21:43:01.348Z",
+      "pr": "https://github.com/jayekwere/reviewshield/pull/3",
+      "case": "unsafe",
+      "head_sha": "82be339f03943eb9106f86b881c4126cef812eb6",
+      "app_id": 5547582,
+      "app_slug": "reviewshield-jay-ekwere",
+      "check_id": 124328677931,
+      "name": "ReviewShield / Python",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/jayekwere/reviewshield/runs/124328677931",
+      "annotations": [
+        {
+          "path": "integration-fixtures/live-app-probe.py",
+          "blob_href": "https://github.com/jayekwere/reviewshield/blob/82be339f03943eb9106f86b881c4126cef812eb6/integration-fixtures/live-app-probe.py",
+          "start_line": 2,
+          "start_column": null,
+          "end_line": 2,
+          "end_column": null,
+          "annotation_level": "failure",
+          "title": "Semgrep OSS: opt.reviewshield.policy.untrusted-eval",
+          "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+          "raw_details": null
+        }
+      ]
+    }
+  },
+  "safe": {
+    "worker": {
+      "job": "9ef338663f524fbc4f2e02c92fc463494b4d3f1d8243434db4f1e8e6a45c6b22",
+      "check_id": 124329687329,
+      "head_sha": "d913a8bdd233a93ca74c536daa29c3482acb0fb0",
+      "evidence": {
+        "pr": 3,
+        "head_sha": "d913a8bdd233a93ca74c536daa29c3482acb0fb0",
+        "base_sha": "37d3d5b3d401a7f7985be86df6c9d24a794d2545",
+        "git_blob_verification": "sha1-and-byte-count",
+        "worker_report_sha256": "339c0862cd87f904519f1944c326273a2c7dd84167211f9b1125c852aa036e5a",
+        "assessed": [
+          "integration-fixtures/live-app-probe.py"
+        ],
+        "unassessed": []
+      }
+    },
+    "native_check": {
+      "observed_at": "2026-10-30T21:45:31.041Z",
+      "pr": "https://github.com/jayekwere/reviewshield/pull/3",
+      "case": "safe",
+      "head_sha": "d913a8bdd233a93ca74c536daa29c3482acb0fb0",
+      "app_id": 5547582,
+      "app_slug": "reviewshield-jay-ekwere",
+      "check_id": 124329687329,
+      "name": "ReviewShield / Python",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/jayekwere/reviewshield/runs/124329687329",
+      "annotations": []
+    }
+  },
+  "stale": {
+    "job": "dc6014b876c31abfd7c36ada3f3d63a07ff8e44cdaebc5c8046a4baa3e7da75f",
+    "status": "failed",
+    "publication_outcome": "not_attempted"
+  },
+  "native_app_check_counts": {
+    "unsafe": 1,
+    "stale": 0,
+    "safe": 1
+  },
+  "negative_receiver_probes": [
+    {
+      "probe": "get",
+      "status": 404
+    },
+    {
+      "probe": "unsigned",
+      "status": 403
+    },
+    {
+      "probe": "bad-signature",
+      "status": 403
+    },
+    {
+      "probe": "signed-unbound",
+      "status": 403
+    }
+  ],
+  "limits": [
+    "Configured Python rule detects direct eval(input(...)) only.",
+    "A successful configured-rule check does not establish complete vulnerability coverage.",
+    "Separate CodeQL SARIF production is not part of this automatic Python scan.",
+    "External publication can be partial after ambiguous network failures; this is not a distributed exactly-once guarantee.",
+    "Required-check branch protection and persistent hosting remain operator responsibilities."
+  ],
+  "cleanup": {
+    "verification_pr_closed_without_merge": true,
+    "verification_branch_deleted": true,
+    "temporary_webhook_disabled_after_acceptance": true,
+    "app_registration_retained": true,
+    "private_key_kept_outside_repository": true,
+    "temporary_receiver_stopped": true,
+    "temporary_tunnel_stopped": true,
+    "loopback_listener_closed": true
+  }
+}
