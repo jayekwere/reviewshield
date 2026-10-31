@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "audit_date": "2026-10-31",
+  "audited_revision": "60d71b9a5a19ed50de8a01a7b7ccbebe250c9fe3",
+  "scope": "Current tracked repository, independent baseline and architecture review, focused source-binding investigation and parent validation.",
+  "findings": [
+    {
+      "rule_id": "mutable-pr-snapshot",
+      "severity": "high",
+      "status": "fixed",
+      "fix": "Use immutable base/head comparison with terminal-head validation and SHA-pinned directory membership; selected files must match regular-file modes and blob IDs. Final PR freshness checks remain.",
+      "regressions": [
+        "Head changes and returns cannot substitute safe source.",
+        "Incomplete or substituted comparison/tree evidence, symlinks and submodules reject before scanning.",
+        "Merge-base evidence is separate from live base identity; renames, deletions and mixed scope remain supported."
+      ]
+    },
+    {
+      "rule_id": "malformed-http-target",
+      "severity": "low",
+      "status": "fixed",
+      "fix": "Validate origin-form request targets and parse URLs inside the HTTP error boundary.",
+      "regressions": [
+        "Raw malformed request targets return a bounded error.",
+        "Subsequent normal sample and asset requests still succeed.",
+        "Existing Origin, not-found and invalid-JSON responses remain intact."
+      ]
+    }
+  ],
+  "local_verification": {
+    "typescript_tests": 24,
+    "python_tests": 9,
+    "browser_tests": 1,
+    "node_imported_source_line_percent": 82.59,
+    "node_imported_source_branch_percent": 86.97,
+    "python_statement_and_branch_percent_rounded": 84,
+    "lint": "passed",
+    "typecheck": "passed",
+    "offline_cli": "passed",
+    "browser": "passed on isolated loopback port 18181 because 8080 was in use",
+    "container": {
+      "image": "reviewshield:audit-20261031",
+      "uid": 10001,
+      "read_only": true,
+      "capabilities": "dropped",
+      "http": "passed"
+    },
+    "native_scanner_acceptance": {
+      "verification": "synthetic-native-docker-coordinator",
+      "github_api": "controlled contract responses; not a live GitHub source-binding acceptance",
+      "scanner": "native-container",
+      "pr": 5,
+      "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "base_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "merge_base_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "head_tree_sha": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "revision_binding": "immutable-compare-and-head-tree",
+      "git_blob_verification": "sha1-and-byte-count",
+      "worker_report_sha256": "0112041e8a9e7e209380889b2523f8018e5b3babeb84335c9e7d9951743dc9bb",
+      "assessed": [
+        "fixtures/safe.py",
+        "fixtures/suppressed.py",
+        "fixtures/unsafe.py"
+      ],
+      "unassessed": [],
+      "decision": "failure",
+      "findings": [
+        {
+          "tool": "Semgrep OSS",
+          "rule": "opt.reviewshield.policy.untrusted-eval",
+          "path": "fixtures/suppressed.py",
+          "start_line": 2,
+          "end_line": 2,
+          "level": "error",
+          "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+          "fingerprint": "6ba01734dc2ab3b84412117d239e76719158eeca725e89229f6af712262db565",
+          "source_sha256": "0c2d86e8ecdb44f7ef1fac44cb72660c1af44acec7121e03de58b6750f4a5ac4",
+          "occurrences": 1,
+          "baseline": false,
+          "on_changed_lines": true
+        },
+        {
+          "tool": "Semgrep OSS",
+          "rule": "opt.reviewshield.policy.untrusted-eval",
+          "path": "fixtures/unsafe.py",
+          "start_line": 2,
+          "end_line": 2,
+          "level": "error",
+          "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+          "fingerprint": "9263508919a10c5311e6dec84294cdd6283420d24ecdb1f7953b9b434baf4c56",
+          "source_sha256": "c52f431dd282b3d7a24a188ed4837f62d8d0bb30854428c9f6c90c5010862160",
+          "occurrences": 1,
+          "baseline": false,
+          "on_changed_lines": true
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Automatic comparisons accept at most 299 changed files to reject the provider's 300-file truncation boundary.",
+    "Selected directory responses must be untruncated and at most 4 MiB; at most 1,000 API reads and a five-minute read deadline.",
+    "Fork object reads depend on scoped base-repository access and fail closed when inaccessible.",
+    "Narrow direct eval(input(...)) policy remains explicit; this is not complete vulnerability coverage.",
+    "No live racing exploit or production branch-protection claim. Historical signed App acceptance is separately recorded in github-app-verification.json."
+  ],
+  "hosted_ci": "Verify workflow badge and current Actions run identify the final published commit."
+}

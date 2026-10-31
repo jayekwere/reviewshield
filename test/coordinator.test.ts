@@ -74,7 +74,15 @@ const native = () => ({
   },
 });
 function api(
-  overrides: { pr?: unknown; files?: unknown; blob?: unknown } = {},
+  overrides: {
+    pr?: unknown;
+    files?: unknown;
+    blob?: unknown;
+    comparison?: unknown;
+    commit?: unknown;
+    tree?: unknown;
+    source_tree?: unknown;
+  } = {},
   calls: string[] = [],
 ): typeof fetch {
   return async (url, init) => {
@@ -86,6 +94,17 @@ function api(
     assert.equal(new Headers(init?.headers).get("Authorization"), "Bearer synthetic-token");
     calls.push(String(url));
     if (path.pathname.endsWith("/pulls/5")) return Response.json(overrides.pr ?? pr);
+    if (path.pathname.includes("/compare/"))
+      return Response.json(
+        overrides.comparison ??
+          comparison(Array.isArray(overrides.files) ? overrides.files : [change]),
+      );
+    if (path.pathname.endsWith(`/git/commits/${receipt.head_sha}`))
+      return Response.json(overrides.commit ?? { sha: receipt.head_sha, tree: { sha: treeSha } });
+    if (path.pathname.endsWith(`/git/trees/${treeSha}`))
+      return Response.json(overrides.tree ?? headTree());
+    if (path.pathname.endsWith(`/git/trees/${sourceTreeSha}`))
+      return Response.json(overrides.source_tree ?? sourceTree());
     if (path.pathname.endsWith("/files")) return Response.json(overrides.files ?? [change]);
     if (path.pathname.endsWith(`/git/blobs/${blobSha}`))
       return Response.json(overrides.blob ?? blob);
@@ -93,6 +112,142 @@ function api(
   };
 }
 const scanner: ScanWorker = async () => native();
+const treeSha = "e".repeat(40);
+const sourceTreeSha = "f".repeat(40);
+const comparison = (files: unknown[] = [change]) => ({
+  base_commit: { sha: pr.base.sha },
+  merge_base_commit: { sha: "d".repeat(40) },
+  commits: [{ sha: receipt.head_sha }],
+  status: "ahead",
+  files,
+});
+const headTree = () => ({
+  sha: treeSha,
+  truncated: false,
+  tree: [{ path: "nested", sha: sourceTreeSha, type: "tree", mode: "040000" }],
+});
+const sourceTree = () => ({
+  sha: sourceTreeSha,
+  truncated: false,
+  tree: [{ path: "source.py", sha: blobSha, type: "blob", mode: "100644" }],
+});
+
+test("immutable revision selection resists a PR head that changes and returns", async () => {
+  const safe = Buffer.from("pass\n");
+  const safeSha = createHash("sha1").update(`blob ${safe.length}\0`).update(safe).digest("hex");
+  const mutable = { ...change, sha: safeSha, additions: 1, patch: "@@ -0,0 +1,1 @@\n+pass" };
+  const original = api({ files: [mutable], comparison: comparison() });
+  const transport: typeof fetch = async (url, init) =>
+    String(url).endsWith(`/git/blobs/${safeSha}`)
+      ? Response.json({
+          sha: safeSha,
+          encoding: "base64",
+          size: safe.length,
+          content: safe.toString("base64"),
+        })
+      : original(url, init);
+  const prepared = await coordinate(
+    receipt,
+    binding,
+    "synthetic-token",
+    transport,
+    async (source) => {
+      const bytes = await readFile(join(source, change.filename));
+      const report = native();
+      report.files[change.filename as "nested/source.py"] = digest(bytes);
+      if (bytes.equals(safe)) report.sarif.runs[0]!.results = [];
+      return report;
+    },
+  );
+  assert.equal(prepared.artifact.head_sha, receipt.head_sha);
+  assert.equal(review(prepared.artifact).decision, "failure");
+  assert.equal(prepared.artifact.files[0]?.source_sha256, digest(content));
+});
+
+test("immutable comparison and head tree reject ambiguous or substituted source", async () => {
+  const invalid = [
+    { comparison: comparison([]) },
+    { comparison: comparison([change, change]) },
+    { comparison: { ...comparison(), base_commit: { sha: "0".repeat(40) } } },
+    { comparison: { ...comparison(), commits: [{ sha: "0".repeat(40) }] } },
+    { comparison: { ...comparison(), commits: [] } },
+    {
+      comparison: comparison(
+        Array.from({ length: 300 }, (_, i) => ({ ...change, filename: `f${i}.py` })),
+      ),
+    },
+    { tree: { ...headTree(), truncated: true } },
+    { tree: { ...headTree(), sha: "0".repeat(40) } },
+    { tree: { ...headTree(), tree: [] } },
+    { source_tree: { ...sourceTree(), truncated: true } },
+    { source_tree: { ...sourceTree(), tree: [{ ...sourceTree().tree[0], sha: "0".repeat(40) }] } },
+    { source_tree: { ...sourceTree(), tree: [{ ...sourceTree().tree[0], mode: "120000" }] } },
+    { tree: { ...headTree(), tree: [...headTree().tree, ...headTree().tree] } },
+    { tree: { ...headTree(), tree: [{ ...headTree().tree[0], sha: "0".repeat(40) }] } },
+    { tree: { ...headTree(), tree: [{ ...headTree().tree[0], mode: "120000" }] } },
+    { tree: { ...headTree(), tree: [{ ...headTree().tree[0], mode: "160000", type: "commit" }] } },
+    { commit: { sha: "0".repeat(40), tree: { sha: treeSha } } },
+  ];
+  for (const override of invalid) {
+    let scanned = false;
+    await assert.rejects(
+      coordinate(receipt, binding, "synthetic-token", api(override), async () => {
+        scanned = true;
+        return native();
+      }),
+    );
+    assert.equal(scanned, false);
+  }
+});
+
+test("small PR membership reads skip unrelated repository subtrees", async () => {
+  const transport = api({
+    tree: {
+      ...headTree(),
+      tree: [
+        ...headTree().tree,
+        { path: "unrelated", sha: "1".repeat(40), type: "tree", mode: "040000" },
+      ],
+    },
+  });
+  const reads: string[] = [];
+  await coordinate(
+    receipt,
+    binding,
+    "synthetic-token",
+    async (url, init) => {
+      reads.push(String(url));
+      assert.equal(new URL(String(url)).searchParams.has("recursive"), false);
+      return transport(url, init);
+    },
+    scanner,
+  );
+  assert.ok(reads.every((url) => !url.includes("1".repeat(40))));
+});
+
+test("immutable merge-base evidence preserves live base, rename and removed-file semantics", async () => {
+  const renamed = { ...change, status: "renamed", previous_filename: "old.py" };
+  const removed = { ...change, filename: "deleted.py", status: "removed", patch: undefined };
+  const result = await coordinate(
+    receipt,
+    binding,
+    "synthetic-token",
+    api({
+      pr: {
+        ...pr,
+        changed_files: 2,
+        head: { ...pr.head, repo: { id: 99, full_name: "fork/service" } },
+      },
+      comparison: comparison([renamed, removed]),
+      files: [renamed, removed],
+    }),
+    scanner,
+  );
+  assert.equal(result.artifact.base_sha, pr.base.sha);
+  assert.equal(result.evidence.merge_base_sha, "d".repeat(40));
+  assert.equal(result.evidence.head_tree_sha, treeSha);
+  assert.deepEqual(result.evidence.unassessed, ["deleted.py"]);
+});
 
 test("coordinator verifies native Git blobs, private files, exact diff and scan evidence", async () => {
   let source = "";

@@ -20,8 +20,13 @@ const files: {
   deletions: number;
   patch: string;
 }[] = [];
-for (const name of ["safe.py", "unsafe.py"]) {
-  const bytes = await readFile(`fixtures/${name}`);
+for (const name of ["safe.py", "unsafe.py", "suppressed.py"]) {
+  const bytes =
+    name === "suppressed.py"
+      ? Buffer.from(
+          "# Analysis-only fixture, never executed.\neval(input('synthetic expression: '))  # nosemgrep: untrusted-eval\n",
+        )
+      : await readFile(`fixtures/${name}`);
   const sha = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
   const lines = bytes.toString("utf8").trimEnd().split("\n");
   files.push({
@@ -48,7 +53,33 @@ const fakeGitHub: typeof fetch = async (url) => {
       head: { sha: receipt.head_sha },
       base: { sha: "b".repeat(40), repo: { id: 42 } },
     });
-  if (path.endsWith("/files")) return Response.json(files);
+  if (path.includes("/compare/"))
+    return Response.json({
+      base_commit: { sha: "b".repeat(40) },
+      merge_base_commit: { sha: "b".repeat(40) },
+      commits: [{ sha: receipt.head_sha }],
+      status: "ahead",
+      files,
+    });
+  if (path.endsWith(`/git/commits/${receipt.head_sha}`))
+    return Response.json({ sha: receipt.head_sha, tree: { sha: "e".repeat(40) } });
+  if (path.endsWith(`/git/trees/${"e".repeat(40)}`))
+    return Response.json({
+      sha: "e".repeat(40),
+      truncated: false,
+      tree: [{ path: "fixtures", sha: "f".repeat(40), mode: "040000", type: "tree" }],
+    });
+  if (path.endsWith(`/git/trees/${"f".repeat(40)}`))
+    return Response.json({
+      sha: "f".repeat(40),
+      truncated: false,
+      tree: files.map((file) => ({
+        path: file.filename.slice("fixtures/".length),
+        sha: file.sha,
+        mode: "100644",
+        type: "blob",
+      })),
+    });
   const blob = blobs.get(path.split("/").at(-1) ?? "");
   if (blob) return Response.json(blob);
   throw new Error("Unexpected synthetic GitHub read");
@@ -58,11 +89,18 @@ const prepared = await coordinate(receipt, binding, "synthetic-token", fakeGitHu
 );
 const result = review(prepared.artifact);
 assert.equal(result.decision, "failure");
-assert.equal(result.findings.length, 1);
-assert.equal(result.findings[0]?.path, "fixtures/unsafe.py");
-assert.equal(result.findings[0]?.start_line, 2);
-assert.equal(result.findings[0]?.level, "error");
-assert.deepEqual(prepared.evidence.assessed, ["fixtures/safe.py", "fixtures/unsafe.py"]);
+assert.equal(result.findings.length, 2);
+assert.deepEqual(result.findings.map((f) => f.path).sort(), [
+  "fixtures/suppressed.py",
+  "fixtures/unsafe.py",
+]);
+assert.ok(result.findings.every((f) => f.start_line === 2 && f.level === "error"));
+assert.deepEqual(prepared.evidence.assessed, [
+  "fixtures/safe.py",
+  "fixtures/suppressed.py",
+  "fixtures/unsafe.py",
+]);
+assert.equal(prepared.evidence.revision_binding, "immutable-compare-and-head-tree");
 console.log(
   JSON.stringify({
     verification: "synthetic-native-docker-coordinator",

@@ -225,8 +225,10 @@ export async function coordinate(
     throw new Error("Queued coordination binding mismatch");
   const base = `https://api.github.com/repos/${binding.repository}`;
   const deadline = Date.now() + 300000;
+  let reads = 0;
   const get = async (path: string) => {
-    if (Date.now() >= deadline) throw new Error("Coordination deadline exceeded");
+    if (++reads > 1000 || Date.now() >= deadline)
+      throw new Error("Coordination read budget or deadline exceeded");
     return json(
       await request(base + path, {
         headers: {
@@ -242,33 +244,88 @@ export async function coordinate(
   const pr = z
     .object({
       state: z.literal("open"),
-      changed_files: z.number().int().min(1).max(500),
+      changed_files: z.number().int().min(1).max(299),
       head: z.object({ sha }),
       base: z.object({ sha, repo: z.object({ id: z.number().int() }) }),
     })
     .parse(await get(`/pulls/${receipt.pr}`));
   if (pr.head.sha !== receipt.head_sha || pr.base.repo.id !== binding.repository_id)
     throw new Error("Queued PR identity or head changed");
-  const changes: Change[] = [];
-  for (let page = 1; changes.length < pr.changed_files && page <= 5; page++) {
-    const batch = z
-      .array(changeSchema)
-      .max(100)
-      .parse(await get(`/pulls/${receipt.pr}/files?per_page=100&page=${page}`));
-    if (!batch.length) throw new Error("Incomplete PR file pagination");
-    changes.push(...batch);
-  }
+  const comparison = z
+    .object({
+      base_commit: z.object({ sha }),
+      merge_base_commit: z.object({ sha }),
+      commits: z.array(z.object({ sha })).min(1).max(250),
+      status: z.enum(["ahead", "diverged"]),
+      files: z.array(changeSchema).min(1).max(299),
+    })
+    .parse(await get(`/compare/${pr.base.sha}...${pr.head.sha}`));
+  const changes = comparison.files;
   if (
+    comparison.base_commit.sha !== pr.base.sha ||
+    comparison.commits.at(-1)?.sha !== pr.head.sha ||
     changes.length !== pr.changed_files ||
     new Set(changes.map((f) => f.filename)).size !== changes.length
   )
-    throw new Error("PR file enumeration is incomplete or duplicated");
+    throw new Error("Immutable PR comparison is incomplete or inconsistent");
   const selected = changes.filter((f) => f.filename.endsWith(".py") && f.status !== "removed");
   const unassessed = changes
     .filter((f) => !selected.includes(f))
     .map((f) => f.filename)
     .sort();
   if (!selected.length) throw new Error("No Python scope; no clean check can be produced");
+  const commit = z
+    .object({ sha, tree: z.object({ sha }) })
+    .parse(await get(`/git/commits/${pr.head.sha}`));
+  if (commit.sha !== pr.head.sha) throw new Error("Head commit identity mismatch");
+  const treeSchema = z.object({
+    sha,
+    truncated: z.literal(false),
+    tree: z
+      .array(
+        z.object({
+          path: z.string().min(1).max(4096),
+          sha,
+          type: z.enum(["blob", "tree", "commit"]),
+          mode: z.string(),
+        }),
+      )
+      .max(100000),
+  });
+  type Entry = z.infer<typeof treeSchema>["tree"][number];
+  const trees = new Map<string, Map<string, Entry>>();
+  const readTree = async (id: string) => {
+    const cached = trees.get(id);
+    if (cached) return cached;
+    const tree = treeSchema.parse(await get(`/git/trees/${id}`));
+    const entries = new Map(tree.tree.map((entry) => [entry.path, entry]));
+    if (
+      tree.sha !== id ||
+      entries.size !== tree.tree.length ||
+      tree.tree.some((entry) => entry.path.includes("/"))
+    )
+      throw new Error("Head tree identity or completeness mismatch");
+    trees.set(id, entries);
+    return entries;
+  };
+  for (const change of selected) {
+    let id = commit.tree.sha;
+    const parts = change.filename.split("/");
+    for (const part of parts.slice(0, -1)) {
+      const entry = (await readTree(id)).get(part);
+      if (entry?.type !== "tree" || entry.mode !== "040000")
+        throw new Error("Selected source parent is not a directory in the pinned head");
+      id = entry.sha;
+    }
+    const entry = (await readTree(id)).get(parts.at(-1) ?? "");
+    if (
+      !entry ||
+      entry.sha !== change.sha ||
+      entry.type !== "blob" ||
+      !["100644", "100755"].includes(entry.mode)
+    )
+      throw new Error("Selected source is not a regular file in the pinned head tree");
+  }
   const directory = await mkdtemp(join(tmpdir(), "reviewshield-coordinator-"));
   const source = join(directory, "source");
   await mkdir(source, { mode: 0o700 });
@@ -338,6 +395,9 @@ export async function coordinate(
         pr: receipt.pr,
         head_sha: pr.head.sha,
         base_sha: pr.base.sha,
+        merge_base_sha: comparison.merge_base_commit.sha,
+        head_tree_sha: commit.tree.sha,
+        revision_binding: "immutable-compare-and-head-tree",
         git_blob_verification: "sha1-and-byte-count",
         worker_report_sha256: digest(JSON.stringify(native)),
         assessed: expected,

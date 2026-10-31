@@ -36,8 +36,11 @@ export async function serve(
       res.end();
       return;
     }
-    const url = new URL(req.url ?? "/", "http://localhost");
     try {
+      const target = req.url ?? "/";
+      if (!target.startsWith("/") || target.startsWith("//") || target.includes("\\"))
+        throw new Error("Origin-form request target required");
+      const url = new URL(target, "http://localhost");
       if (req.method === "GET" && url.pathname === "/api/sample") {
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(sample));
