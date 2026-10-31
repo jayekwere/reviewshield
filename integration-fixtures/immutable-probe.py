@@ -1,2 +1,3 @@
 # Analysis-only synthetic fixture. Never imported or executed.
-eval(input('synthetic expression: '))
+import json
+document = json.loads(input('synthetic JSON: '))
