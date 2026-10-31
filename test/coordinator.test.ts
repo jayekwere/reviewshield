@@ -116,7 +116,7 @@ const treeSha = "e".repeat(40);
 const sourceTreeSha = "f".repeat(40);
 const comparison = (files: unknown[] = [change]) => ({
   base_commit: { sha: pr.base.sha },
-  merge_base_commit: { sha: "d".repeat(40) },
+  merge_base_commit: { sha: pr.base.sha },
   commits: [{ sha: receipt.head_sha }],
   status: "ahead",
   files,
@@ -238,7 +238,11 @@ test("immutable merge-base evidence preserves live base, rename and removed-file
         changed_files: 2,
         head: { ...pr.head, repo: { id: 99, full_name: "fork/service" } },
       },
-      comparison: comparison([renamed, removed]),
+      comparison: {
+        ...comparison([renamed, removed]),
+        status: "diverged",
+        merge_base_commit: { sha: "d".repeat(40) },
+      },
       files: [renamed, removed],
     }),
     scanner,

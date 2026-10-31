@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "verification_date": "2026-10-31",
+  "scope": "Actual restricted App-token native PR/comparison/commit/directory/blob reads, local restricted Semgrep and native check publication/readback. Intake is a trusted local acceptance receipt; signed webhook intake was not retested.",
+  "cases": [
+    {
+      "observed_at": "2026-10-31T23:35:04.514Z",
+      "scope": "Actual App-token native PR/comparison/commit/directory/blob reads, restricted Semgrep and check publication/readback; trusted local acceptance receipt; signed webhook not retested",
+      "worker_source_commit": "701ddebea05232a8ed1a0663485612ede4d8bfae",
+      "pr": 4,
+      "case": "unsafe",
+      "head_sha": "8ec632dc2cf54194c8674444f2a1703abe2b2791",
+      "base_sha": "701ddebea05232a8ed1a0663485612ede4d8bfae",
+      "merge_base_sha": "701ddebea05232a8ed1a0663485612ede4d8bfae",
+      "head_tree_sha": "01897976b16ca554440c08c6ac8b90c7e1817a2e",
+      "revision_binding": "immutable-compare-and-head-tree",
+      "git_blob_verification": "sha1-and-byte-count",
+      "worker_report_sha256": "071f7b2edd55b5aac4277d303147864e321e3bbce3f2f634b0d98694485d861a",
+      "assessed": [
+        "integration-fixtures/immutable-probe.py"
+      ],
+      "unassessed": [],
+      "check": {
+        "id": 124690639073,
+        "app_id": 5547582,
+        "head_sha": "8ec632dc2cf54194c8674444f2a1703abe2b2791",
+        "name": "ReviewShield / Python",
+        "conclusion": "failure",
+        "url": "https://github.com/jayekwere/reviewshield/runs/124690639073",
+        "annotations": [
+          {
+            "path": "integration-fixtures/immutable-probe.py",
+            "blob_href": "https://github.com/jayekwere/reviewshield/blob/8ec632dc2cf54194c8674444f2a1703abe2b2791/integration-fixtures/immutable-probe.py",
+            "start_line": 2,
+            "start_column": null,
+            "end_line": 2,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "Semgrep OSS: opt.reviewshield.policy.untrusted-eval",
+            "message": "User-controlled input reaches eval. Replace dynamic evaluation with a strict parser.",
+            "raw_details": null
+          }
+        ]
+      }
+    },
+    {
+      "observed_at": "2026-10-31T23:39:34.113Z",
+      "scope": "Actual App-token native PR/comparison/commit/directory/blob reads, restricted Semgrep and check publication/readback; trusted local acceptance receipt; signed webhook not retested",
+      "worker_source_commit": "701ddebea05232a8ed1a0663485612ede4d8bfae",
+      "pr": 4,
+      "case": "safe",
+      "head_sha": "cd996b2ab2482cbae344e8d067ede9c1d747faa2",
+      "base_sha": "701ddebea05232a8ed1a0663485612ede4d8bfae",
+      "merge_base_sha": "701ddebea05232a8ed1a0663485612ede4d8bfae",
+      "head_tree_sha": "5242d9cd1a3ac670f20aaa4f845d9f8d1fe98c59",
+      "revision_binding": "immutable-compare-and-head-tree",
+      "git_blob_verification": "sha1-and-byte-count",
+      "worker_report_sha256": "dc233b11a87693b4cbd6f01efbded2b4ff6ccc90add1efae9ce7be75cb16c487",
+      "assessed": [
+        "integration-fixtures/immutable-probe.py"
+      ],
+      "unassessed": [],
+      "check": {
+        "id": 124691539945,
+        "app_id": 5547582,
+        "head_sha": "cd996b2ab2482cbae344e8d067ede9c1d747faa2",
+        "name": "ReviewShield / Python",
+        "conclusion": "success",
+        "url": "https://github.com/jayekwere/reviewshield/runs/124691539945",
+        "annotations": []
+      }
+    }
+  ],
+  "cleanup": {
+    "pull_request": "https://github.com/jayekwere/reviewshield/pull/4",
+    "closed_without_merge": true,
+    "temporary_branch_deleted": true,
+    "webhook_remains_disabled": true
+  },
+  "limitations": [
+    "Analysis-only synthetic fixture, never executed.",
+    "Historical signed webhook acceptance is separately recorded; no permanent receiver was deployed."
+  ]
+}
