@@ -88,3 +88,7 @@ The temporary verification webhook was disabled after acceptance, and the test P
 [Safe revision check](docs/app-check-safe.jpg) and [installation scope](docs/app-installation.jpg).
 
 Native App acceptance after immutable source hardening is recorded in [immutable source verification](docs/immutable-source-verification.json). The synthetic unsafe revision failed with a precise annotation and the safe revision passed. This acceptance used a trusted local receipt, separately from the historical signed webhook test.
+
+---
+
+**AI assistance:** AI tools helped with code or documentation.
