@@ -103,5 +103,6 @@
     "Narrow direct eval(input(...)) policy remains explicit; this is not complete vulnerability coverage.",
     "No live racing exploit or production branch-protection claim. Historical signed App acceptance is separately recorded in github-app-verification.json."
   ],
-  "hosted_ci": "Verify workflow badge and current Actions run identify the final published commit."
+  "hosted_ci": "Verify workflow badge and current Actions run identify the final published commit.",
+  "hosted_ci_dependency_fix": "The first hosted attempt timed out retrieving Ubuntu package metadata from the runner HTTP mirror. Verification uses the official HTTPS archive mirror, bounded APT network timeouts and a five-minute browser-install step limit. Package signature verification remains enabled."
 }

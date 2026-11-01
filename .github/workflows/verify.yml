@@ -37,7 +37,14 @@ jobs:
       - run: python scanner/scan.py fixtures artifacts/semgrep.sarif --semgrep .scanner/bin/semgrep
       - run: node --import tsx scripts/verify-scan.ts artifacts/semgrep.sarif
       - run: npm audit --audit-level=high
-      - run: npx playwright install --with-deps chromium
+      - name: Install browser and system dependencies
+        timeout-minutes: 5
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
+          fi
+          printf '%s\n' 'Acquire::http::Timeout "20";' 'Acquire::https::Timeout "20";' 'Acquire::Retries "2";' | sudo tee /etc/apt/apt.conf.d/99-ci-network-timeouts > /dev/null
+          npx playwright install --with-deps chromium
       - run: npm run test:browser
       - run: docker build -f Dockerfile.scanner -t reviewshield-scanner:ci .
       - run: >-
